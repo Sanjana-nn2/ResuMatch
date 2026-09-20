@@ -1,8 +1,18 @@
 import os
+import gc
 import logging
 import numpy as np
 from typing import List, Tuple
 from sentence_transformers import SentenceTransformer
+import torch
+
+# Limit PyTorch CPU threads to prevent memory spiking and CPU saturation on 512MB containers
+torch.set_num_threads(int(os.getenv("TORCH_THREADS", "1")))
+if hasattr(torch, "set_num_interop_threads"):
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        pass
 
 logger = logging.getLogger("resumatch-ml.model")
 
@@ -11,7 +21,7 @@ class EmbeddingModelManager:
     Manages loading and inference for Sentence-Transformer models.
     Default model: 'all-MiniLM-L6-v2'
     - Output vector dimension: 384
-    - Memory footprint: ~120 MB (ideal for free tiers like Render/Railway)
+    - Memory footprint: ~120 MB (optimized for low-RAM containers)
     - Architecture: 6-layer MiniLM trained on 1B+ sentence pairs
     """
     def __init__(self):
@@ -19,11 +29,17 @@ class EmbeddingModelManager:
         self._model: SentenceTransformer = None
 
     def load_model(self) -> None:
-        """Loads model into memory during FastAPI startup lifespan."""
+        """Loads model into memory during FastAPI startup lifespan or on first demand."""
         if self._model is None:
             logger.info(f"Loading Sentence-Transformer model: {self.model_name}...")
-            self._model = SentenceTransformer(self.model_name)
-            logger.info("Model loaded successfully into memory.")
+            # Load explicitly onto CPU to avoid CUDA initialization overhead
+            self._model = SentenceTransformer(self.model_name, device="cpu")
+            self._model.eval()
+            logger.info("Model loaded successfully into memory on CPU.")
+
+    @property
+    def is_loaded(self) -> bool:
+        return self._model is not None
 
     @property
     def model(self) -> SentenceTransformer:
@@ -35,15 +51,20 @@ class EmbeddingModelManager:
         """
         Computes 384-dimensional dense vector embeddings for input texts.
         Automatically normalizes vectors to unit length so dot product == cosine similarity.
+        Runs under torch.no_grad() with low batch size to minimize memory allocation.
         """
         if not texts:
             return np.array([])
-        embeddings = self.model.encode(
-            texts,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-            convert_to_numpy=True
-        )
+        with torch.no_grad():
+            embeddings = self.model.encode(
+                texts,
+                batch_size=8,
+                normalize_embeddings=True,
+                show_progress_bar=False,
+                convert_to_numpy=True
+            )
+        # Explicit garbage collection after batch inference
+        gc.collect()
         return embeddings
 
     @staticmethod

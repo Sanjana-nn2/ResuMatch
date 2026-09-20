@@ -102,16 +102,27 @@ class SkillExtractor:
     """
     Extracts skills using a hybrid approach:
     1. Pattern matching against curated industry tech taxonomies (exact and word boundary regex).
-    2. spaCy Named Entity Recognition (NER) and noun chunk analysis to capture contextual skills.
+    2. spaCy Named Entity Recognition (NER) to capture contextual skills.
     """
     def __init__(self):
-        spacy_model_name = os.getenv("SPACY_MODEL", "en_core_web_sm")
-        try:
-            self.nlp = spacy.load(spacy_model_name)
-            logger.info(f"Loaded spaCy model: {spacy_model_name}")
-        except Exception:
-            logger.warning(f"spaCy model {spacy_model_name} not found locally. Loading blank English model.")
-            self.nlp = spacy.blank("en")
+        self.spacy_model_name = os.getenv("SPACY_MODEL", "en_core_web_sm")
+        self._nlp = None
+
+    @property
+    def nlp(self):
+        """Lazy load spaCy with unused pipeline components disabled to save ~40MB RAM."""
+        if self._nlp is None:
+            try:
+                # Disable parser, tagger, attribute_ruler, lemmatizer if only NER is needed
+                self._nlp = spacy.load(self.spacy_model_name, disable=["parser", "tagger", "attribute_ruler", "lemmatizer"])
+                logger.info(f"Loaded lightweight spaCy pipeline: {self.spacy_model_name}")
+            except Exception:
+                try:
+                    self._nlp = spacy.load(self.spacy_model_name)
+                except Exception:
+                    logger.warning(f"spaCy model {self.spacy_model_name} not found. Loading blank English model.")
+                    self._nlp = spacy.blank("en")
+        return self._nlp
 
     def extract_skills(self, text: str) -> List[Dict]:
         """
