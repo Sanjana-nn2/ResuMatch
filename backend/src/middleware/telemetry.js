@@ -8,20 +8,23 @@ function telemetryMiddleware(req, res, next) {
   const startTime = Date.now();
 
   res.on('finish', async () => {
+    // Normalize path by stripping query strings and trailing slashes (except root '/')
     const rawUrl = req.originalUrl || req.url || '';
+    const pathname = (rawUrl.split('?')[0] || req.path || '/').replace(/\/+$/, '') || '/';
 
-    // Exclude static assets, internal health pings, OPTIONS preflight, and observability self-polling
+    // Exclude static assets, internal health probes, root platform pings, OPTIONS preflight, and admin/observability self-polling
     if (
       req.method === 'OPTIONS' ||
-      rawUrl === '/health' ||
-      rawUrl.startsWith('/api/admin') ||
-      rawUrl === '/favicon.ico'
+      pathname === '/' ||
+      pathname === '/health' ||
+      pathname === '/favicon.ico' ||
+      pathname.startsWith('/api/admin')
     ) {
       return;
     }
 
     const latencyMs = Math.max(1, Date.now() - startTime);
-    const endpoint = rawUrl.split('?')[0] || req.path || '/';
+    const endpoint = pathname;
     const method = req.method;
     const statusCode = res.statusCode;
 
