@@ -1,0 +1,17 @@
+{
+  "short_name": "ResuMatch",
+  "name": "ResuMatch — AI Resume & Job Match Analyzer",
+  "description": "Semantic ATS resume match, keyword gap analysis, and targeted interview preparation.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "display": "standalone",
+  "orientation": "portrait"
+}

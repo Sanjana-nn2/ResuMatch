@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-primary: #0B0F19;
+  --color-surface: #111827;
+  --color-surface-hover: #1F2937;
+  --color-border: #1E293B;
+  --color-accent: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #06B6D4;
+}
+
+/* Custom scrollbars for mobile & desktop */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0F19;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Ensure mobile tap targets have no tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area insets for notched mobile devices & Android gesture navigation */
+.safe-pb {
+  padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+}
+.safe-pt {
+  padding-top: max(env(safe-area-inset-top, 16px), 16px);
+}

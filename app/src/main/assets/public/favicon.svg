@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#0B0F19"/>
+  <rect x="24" y="24" width="464" height="464" rx="104" stroke="#1E293B" stroke-width="8"/>
+  <path d="M140 120H372C383.046 120 392 128.954 392 140V372C392 383.046 383.046 392 372 392H140C128.954 392 120 383.046 120 372V140C120 128.954 128.954 120 140 120Z" fill="#111827" stroke="#334155" stroke-width="8"/>
+  <!-- Document Lines -->
+  <line x1="170" y1="180" x2="342" y2="180" stroke="#10B981" stroke-width="16" stroke-linecap="round"/>
+  <line x1="170" y1="230" x2="290" y2="230" stroke="#94A3B8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="170" y1="280" x2="320" y2="280" stroke="#94A3B8" stroke-width="14" stroke-linecap="round"/>
+  <!-- Semantic Match Emblem Spark -->
+  <circle cx="340" cy="320" r="44" fill="#10B981" fill-opacity="0.2" stroke="#10B981" stroke-width="8"/>
+  <path d="M340 300V340M320 320H360" stroke="#10B981" stroke-width="8" stroke-linecap="round"/>
+</svg>

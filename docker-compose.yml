@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Relational Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: resumatch-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: resumatch
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d resumatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - resumatch-network
+
+  # 2. Python FastAPI NLP Microservice (sentence-transformers + spaCy)
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: resumatch-ml-service
+    restart: always
+    environment:
+      PORT: 8000
+      HOST: 0.0.0.0
+      MODEL_NAME: sentence-transformers/all-MiniLM-L6-v2
+      SPACY_MODEL: en_core_web_sm
+      LOG_LEVEL: info
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - resumatch-network
+
+  # 3. Node.js + Express Main Orchestration API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: resumatch-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/resumatch
+      JWT_SECRET: production_jwt_secret_token_change_for_live_deployment_8923
+      JWT_EXPIRES_IN: 7d
+      ML_SERVICE_URL: http://ml-service:8000
+      CLIENT_URL: http://localhost:5173
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - resumatch-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  resumatch-network:
+    driver: bridge

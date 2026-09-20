@@ -1,0 +1,6 @@
+{
+  "name": "ResuMatch",
+  "description": "AI Resume-to-Job-Description Match & Gap Analyzer with semantic similarity and interview prep.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
