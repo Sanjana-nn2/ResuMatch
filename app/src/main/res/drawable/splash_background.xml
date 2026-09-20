@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/resumatch_dark_bg" />
+    <item
+        android:drawable="@drawable/ic_resumatch_splash_logo"
+        android:gravity="center"
+        android:width="160dp"
+        android:height="160dp" />
+</layer-list>

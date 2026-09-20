@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Outer Card Background -->
+    <path
+        android:fillColor="#111827"
+        android:strokeColor="#334155"
+        android:strokeWidth="8"
+        android:pathData="M140,120 H372 C383.046,120 392,128.954 392,140 V372 C392,383.046 383.046,392 372,392 H140 C128.954,392 120,383.046 120,372 V140 C120,128.954 128.954,120 140,120 Z" />
+
+    <!-- Top Emerald Header Document Line -->
+    <path
+        android:strokeColor="#10B981"
+        android:strokeWidth="16"
+        android:strokeLineCap="round"
+        android:pathData="M170,180 L342,180" />
+
+    <!-- Second Document Line -->
+    <path
+        android:strokeColor="#94A3B8"
+        android:strokeWidth="14"
+        android:strokeLineCap="round"
+        android:pathData="M170,230 L290,230" />
+
+    <!-- Third Document Line -->
+    <path
+        android:strokeColor="#94A3B8"
+        android:strokeWidth="14"
+        android:strokeLineCap="round"
+        android:pathData="M170,280 L320,280" />
+
+    <!-- Match Emblem Spark Circle (Accent Glow) -->
+    <path
+        android:fillColor="#3310B981"
+        android:strokeColor="#10B981"
+        android:strokeWidth="8"
+        android:pathData="M340,320 m-44,0 a44,44 0 1,0 88,0 a44,44 0 1,0 -88,0" />
+
+    <!-- Match Emblem Spark Cross -->
+    <path
+        android:strokeColor="#10B981"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:pathData="M340,300 L340,340 M320,320 L360,320" />
+</vector>
