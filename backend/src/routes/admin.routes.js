@@ -31,6 +31,7 @@ router.get('/metrics', async (req, res) => {
         COUNT(*) as total_requests,
         COALESCE(ROUND(AVG(latency_ms)), 0) as avg_latency_ms,
         COALESCE(MAX(latency_ms), 0) as max_latency_ms,
+        COALESCE(ROUND(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency_ms)), 0) as p95_latency_ms,
         COUNT(CASE WHEN status_code >= 400 THEN 1 END) as error_count
       FROM telemetry_logs
       WHERE timestamp >= NOW() - INTERVAL '24 HOURS';
@@ -64,20 +65,50 @@ router.get('/metrics', async (req, res) => {
     `;
     const statusResult = await db.query(statusQuery);
 
-    // 5. Total system analyses executed
+    // 5. Total lifetime queries recorded in telemetry_logs
+    const totalTelemetryResult = await db.query('SELECT COUNT(*) as count FROM telemetry_logs');
+    const lifetimeTelemetryCount = parseInt(totalTelemetryResult.rows[0]?.count || 0, 10);
+
+    // 6. Total system analyses executed in database (analyses table)
     const analysisCountResult = await db.query('SELECT COUNT(*) FROM analyses');
+    const lifetimeAnalysesCount = parseInt(analysisCountResult.rows[0]?.count || 0, 10);
+
+    // 7. Recent telemetry traces for real-time trace feed (last 20 requests)
+    const recentLogsQuery = `
+      SELECT 
+        id,
+        endpoint,
+        method,
+        status_code,
+        latency_ms,
+        latency_ms as duration_ms,
+        timestamp,
+        timestamp as created_at
+      FROM telemetry_logs
+      ORDER BY timestamp DESC
+      LIMIT 20;
+    `;
+    const recentLogsResult = await db.query(recentLogsQuery);
+
+    const totalRequests = lifetimeTelemetryCount > 0 ? lifetimeTelemetryCount : lifetimeAnalysesCount;
 
     return res.json({
+      uptime: Math.floor(process.uptime()),
       uptimeSeconds: Math.floor(process.uptime()),
       mlService: mlStatus,
+      totalRequests,
+      p95LatencyMs: parseInt(statsResult.rows[0]?.p95_latency_ms || 0, 10),
+      recentLogs: recentLogsResult.rows,
       summary: {
-        totalRequests24h: parseInt(statsResult.rows[0].total_requests || 0, 10),
-        avgLatencyMs: parseInt(statsResult.rows[0].avg_latency_ms || 0, 10),
-        maxLatencyMs: parseInt(statsResult.rows[0].max_latency_ms || 0, 10),
-        errorRate: statsResult.rows[0].total_requests > 0
+        totalRequestsLifetime: totalRequests,
+        totalRequests24h: parseInt(statsResult.rows[0]?.total_requests || 0, 10),
+        avgLatencyMs: parseInt(statsResult.rows[0]?.avg_latency_ms || 0, 10),
+        p95LatencyMs: parseInt(statsResult.rows[0]?.p95_latency_ms || 0, 10),
+        maxLatencyMs: parseInt(statsResult.rows[0]?.max_latency_ms || 0, 10),
+        errorRate: statsResult.rows[0]?.total_requests > 0
           ? Number(((statsResult.rows[0].error_count / statsResult.rows[0].total_requests) * 100).toFixed(2))
           : 0,
-        totalAnalysesLifetime: parseInt(analysisCountResult.rows[0].count || 0, 10),
+        totalAnalysesLifetime: lifetimeAnalysesCount,
       },
       topEndpoints: endpointResult.rows,
       statusCodeDistribution: statusResult.rows,
@@ -91,3 +122,4 @@ router.get('/metrics', async (req, res) => {
 });
 
 module.exports = router;
+

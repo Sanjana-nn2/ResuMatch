@@ -8,11 +8,20 @@ function telemetryMiddleware(req, res, next) {
   const startTime = Date.now();
 
   res.on('finish', async () => {
-    // Exclude static assets or internal health pings from filling log tables
-    if (req.originalUrl === '/health') return;
+    const rawUrl = req.originalUrl || req.url || '';
 
-    const latencyMs = Date.now() - startTime;
-    const endpoint = req.baseUrl ? `${req.baseUrl}${req.path}` : req.path;
+    // Exclude static assets, internal health pings, OPTIONS preflight, and observability self-polling
+    if (
+      req.method === 'OPTIONS' ||
+      rawUrl === '/health' ||
+      rawUrl.startsWith('/api/admin') ||
+      rawUrl === '/favicon.ico'
+    ) {
+      return;
+    }
+
+    const latencyMs = Math.max(1, Date.now() - startTime);
+    const endpoint = rawUrl.split('?')[0] || req.path || '/';
     const method = req.method;
     const statusCode = res.statusCode;
 
@@ -23,7 +32,7 @@ function telemetryMiddleware(req, res, next) {
         [endpoint, method, statusCode, latencyMs]
       );
     } catch (err) {
-      // Telemetry should never crash the active request cycle
+      // Telemetry failure must never crash or impact the active request cycle
       console.error('[Telemetry] Error logging request metric:', err.message);
     }
   });

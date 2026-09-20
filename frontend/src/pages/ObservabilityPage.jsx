@@ -97,7 +97,7 @@ export default function ObservabilityPage() {
             <span>Total Queries</span>
           </div>
           <p className="text-base font-bold text-[#F9FAFB]">
-            {metrics?.totalRequests || 0}
+            {metrics?.totalRequests ?? metrics?.summary?.totalRequestsLifetime ?? metrics?.summary?.totalRequests24h ?? 0}
           </p>
           <span className="text-[10px] text-[#9CA3AF] mt-1 block">Lifetime Analyses</span>
         </div>
@@ -126,7 +126,7 @@ export default function ObservabilityPage() {
               </thead>
               <tbody className="divide-y divide-[#1E293B]/60 font-mono text-[11px]">
                 {metrics.recentLogs.map((log, idx) => (
-                  <tr key={idx} className="hover:bg-[#1F2937]/30">
+                  <tr key={log.id || idx} className="hover:bg-[#1F2937]/30">
                     <td className="py-2.5 text-[#F9FAFB]">{log.endpoint}</td>
                     <td className="py-2.5">
                       <span
@@ -139,9 +139,9 @@ export default function ObservabilityPage() {
                         {log.status_code}
                       </span>
                     </td>
-                    <td className="py-2.5 text-[#9CA3AF]">{log.duration_ms}ms</td>
+                    <td className="py-2.5 text-[#9CA3AF]">{log.duration_ms ?? log.latency_ms}ms</td>
                     <td className="py-2.5 text-[#6B7280]">
-                      {new Date(log.created_at).toLocaleTimeString()}
+                      {new Date(log.created_at || log.timestamp).toLocaleTimeString()}
                     </td>
                   </tr>
                 ))}
