@@ -233,7 +233,7 @@ export default function AnalyzerPage({ quickDemoResult, isAnalyzing, setIsAnalyz
           {isAnalyzing ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Analyzing Vectors & Diffing Keywords...</span>
+              <span>AI engine is starting or analyzing your resume. This may take a moment...</span>
             </>
           ) : (
             <>

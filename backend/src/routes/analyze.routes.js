@@ -255,7 +255,7 @@ router.post('/demo', demoRateLimiter, async (req, res) => {
     });
   } catch (err) {
     console.error('[Demo Analysis Error]:', err);
-    return res.status(500).json({ error: 'Demo analysis service is temporarily busy.' });
+    return res.status(500).json({ error: err.message || 'The AI analysis engine is temporarily busy. Please try again in a moment.' });
   }
 });
 

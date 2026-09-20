@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-// Get API base URL directly from environment variable (or default fallback)
+// Get API base URL directly from environment variable (or default fallback to production backend)
 export function getApiBaseUrl() {
-  return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/+$/, '');
+  return (import.meta.env.VITE_API_BASE_URL || 'https://resumatch-backend-pfx5.onrender.com').replace(/\/+$/, '');
 }
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
-  timeout: 35000,
+  timeout: 160000,
 });
 
 // Request interceptor: Dynamic base URL + Auto-inject JWT if authenticated

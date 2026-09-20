@@ -315,7 +315,7 @@ export default function ComparePage({ onNavigateToAuth }) {
           {isLoading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Calculating Embedding Similarity & Deltas...</span>
+              <span>AI engine is starting or analyzing your resume. This may take a moment...</span>
             </>
           ) : (
             <>
